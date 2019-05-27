@@ -1,5 +1,6 @@
 package com.example.prison_i;
 
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -22,7 +23,7 @@ import java.util.UUID;
 public class SignUp_Activity extends AppCompatActivity {
 
 
-
+DatabaseReference assignAdminnUidPrisoner;
 
         EditText usernameEditText;
         EditText passwordEditText;
@@ -31,10 +32,10 @@ public class SignUp_Activity extends AppCompatActivity {
         private String TAG = "TAG";
         boolean selectUserIsTrue;
         boolean jailorisTrue;
-
+        String admin_uId;
         FirebaseDatabase firebaseDatabase;
         DatabaseReference databaseReference;
-
+    FirebaseUser user;
 
     public void onRadioButtonClicked(View view) {
         // Is the button now checked?
@@ -59,11 +60,14 @@ public class SignUp_Activity extends AppCompatActivity {
     public void UpdateFireBase(boolean jailorisTrue , String email , String name , String uuid) {
 
         DatabaseReference dataRef;
-        if (jailorisTrue){
-            dataRef = databaseReference.child("jailureData");
-    }else{
-            dataRef = databaseReference.child("prisonerData");
-        }
+if(jailorisTrue)
+{dataRef = databaseReference.child(admin_uId).child("jailorData");}
+else
+{dataRef = databaseReference.child(admin_uId).child("prisonerData");
+    assignAdminnUidPrisoner=firebaseDatabase.getReference("ADMIN").child("prisonersAdminUId").child(user.getUid());
+    assignAdminnUidPrisoner.child("AdminUid").setValue(admin_uId);
+}
+        //dataRef.child("UID").setValue(uuid);
 
         DatabaseReference uidRef = dataRef.child(uuid);
         uidRef.child("Name").setValue(name);
@@ -83,9 +87,12 @@ public class SignUp_Activity extends AppCompatActivity {
             nameEditText= (EditText) findViewById(R.id.nameEditText);
 
             mAuth = FirebaseAuth.getInstance();
-
+            Intent intent=getIntent();
+            admin_uId=intent.getStringExtra("UId");
+            Log.i("adminID",admin_uId+"44");
+             //admin_uId="ADMIN";
             firebaseDatabase = FirebaseDatabase.getInstance();
-            databaseReference = firebaseDatabase.getReference("UserDATA");
+            databaseReference = firebaseDatabase.getReference("ADMIN");
 
         }
         @Override
@@ -110,7 +117,7 @@ public class SignUp_Activity extends AppCompatActivity {
                                 if (task.isSuccessful()) {
                                     // Sign in success, update UI with the signed-in user's information
                                     Log.d(TAG, "createUserWithEmail:success");
-                                    FirebaseUser user = mAuth.getCurrentUser();
+                                    user = mAuth.getCurrentUser();
                                     UpdateFireBase(jailorisTrue , usernameEditText.getText().toString() , nameEditText.getText().toString(), user.getUid() );
                                 } else {
                                     // If sign in fails, display a message to the user.
